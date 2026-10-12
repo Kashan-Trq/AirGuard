@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#071A1B" />
+  <meta name="description" content="AirGuard — Lahore-focused air-quality decision support for lower-exposure outdoor activity planning." />
+  <title>AirGuard — Lahore Air Quality Decision Support</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="AirGuard home">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <span><strong>AirGuard</strong><small>Lahore</small></span>
+      </a>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#dashboard">Dashboard</a>
+        <a href="#planner">Activity planner</a>
+        <a href="#research">Research</a>
+      </nav>
+      <div class="status-pill"><span class="dot"></span><span id="sourceStatus">Loading live data…</span></div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">AIR QUALITY → ACTION</div>
+          <h1>Don’t just read the AQI.<br><span>Plan around it.</span></h1>
+          <p>AirGuard turns Lahore air-quality forecasts into practical lower-exposure activity windows for schools and families — with transparent methodology and no medical claims.</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#planner">Find a lower-exposure window</a>
+            <a class="btn secondary" href="#research">See the research method</a>
+          </div>
+          <div class="hero-meta">
+            <span>Live modeled PM2.5</span><span>•</span><span>Weather context</span><span>•</span><span>Decision-support algorithm</span>
+          </div>
+        </div>
+        <div class="hero-card" aria-label="Current air quality summary">
+          <div class="hero-card-head"><span>Current Lahore snapshot</span><span id="updatedAt">—</span></div>
+          <div class="metric-large"><span id="currentPm">—</span><small>µg/m³ PM2.5</small></div>
+          <div class="risk-row"><span id="relativeBand" class="band">—</span><span id="currentAqi">US AQI —</span></div>
+          <div class="mini-grid">
+            <div><small>Temperature</small><strong id="currentTemp">—</strong></div>
+            <div><small>Humidity</small><strong id="currentHumidity">—</strong></div>
+            <div><small>Wind</small><strong id="currentWind">—</strong></div>
+          </div>
+          <p class="microcopy">Forecast-based environmental information. Not a diagnosis or guarantee of safety.</p>
+        </div>
+      </section>
+
+      <section id="dashboard" class="section">
+        <div class="section-head">
+          <div><div class="eyebrow">24-HOUR OUTLOOK</div><h2>What the next day looks like</h2></div>
+          <div class="legend"><span><i class="swatch lower"></i>Lower relative exposure</span><span><i class="swatch higher"></i>Higher relative exposure</span></div>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="card chart-card">
+            <div class="card-head"><div><h3>PM2.5 forecast</h3><p>Location-specific modeled concentration</p></div><button id="refreshBtn" class="text-btn">Refresh</button></div>
+            <canvas id="pmChart" width="1000" height="360" aria-label="PM2.5 forecast chart"></canvas>
+            <div class="chart-foot"><span id="chartMin">Lowest: —</span><span id="chartMax">Highest: —</span><span id="chartMedian">Median: —</span></div>
+          </article>
+
+          <article class="card insight-card">
+            <div class="card-head"><div><h3>Decision snapshot</h3><p>AirGuard ranks the available hours</p></div></div>
+            <div class="insight-stack">
+              <div class="insight-feature"><span class="feature-icon">↓</span><div><small>Lowest predicted hour</small><strong id="lowestHour">—</strong><p id="lowestPm">—</p></div></div>
+              <div class="insight-feature"><span class="feature-icon">↗</span><div><small>Highest predicted hour</small><strong id="highestHour">—</strong><p id="highestPm">—</p></div></div>
+              <div class="insight-feature"><span class="feature-icon">≈</span><div><small>Day variability</small><strong id="variability">—</strong><p>Difference between low and high forecast periods</p></div></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="planner" class="section planner-section">
+        <div class="section-head">
+          <div><div class="eyebrow">AIRGUARD DECISION ENGINE</div><h2>Plan an outdoor activity</h2><p class="section-sub">Choose the time range you can use. AirGuard searches for the contiguous interval with the lowest mean modeled PM2.5.</p></div>
+        </div>
+
+        <div class="planner-grid">
+          <form id="plannerForm" class="card planner-form">
+            <label>Activity date
+              <select id="activityDate"></select>
+            </label>
+            <div class="two-col">
+              <label>Earliest start
+                <select id="startHour"></select>
+              </label>
+              <label>Latest finish
+                <select id="endHour"></select>
+              </label>
+            </div>
+            <label>Activity duration
+              <div class="segmented" id="durationGroup">
+                <button type="button" data-duration="30">30 min</button>
+                <button type="button" data-duration="45" class="active">45 min</button>
+                <button type="button" data-duration="60">60 min</button>
+                <button type="button" data-duration="90">90 min</button>
+              </div>
+            </label>
+            <label>Current / planned start <span class="optional">optional, for comparison</span>
+              <select id="plannedStart"></select>
+            </label>
+            <button class="btn primary full" type="submit">Calculate best available window</button>
+            <p class="form-note">The comparison uses a concentration × time proxy, not inhaled dose or medical risk.</p>
+          </form>
+
+          <article class="card recommendation" id="recommendationCard">
+            <div class="rec-empty" id="recEmpty">
+              <div class="rec-icon">◎</div>
+              <h3>Your recommendation will appear here</h3>
+              <p>AirGuard evaluates every possible window inside your selected range.</p>
+            </div>
+            <div class="rec-content hidden" id="recContent">
+              <div class="rec-label">Recommended lower-exposure window</div>
+              <h3 id="bestWindow">—</h3>
+              <div class="rec-number"><span id="bestWindowPm">—</span><small>mean PM2.5 µg/m³</small></div>
+              <div class="comparison" id="comparisonBox">
+                <div><small>Your selected start</small><strong id="plannedExposure">—</strong></div>
+                <div class="arrow">→</div>
+                <div><small>AirGuard window</small><strong id="bestExposure">—</strong></div>
+              </div>
+              <div class="reduction" id="reductionWrap"><strong id="reductionPct">—</strong><span>lower concentration-time exposure proxy</span></div>
+              <div class="why-box">
+                <h4>Why this window?</h4>
+                <ul id="whyList"></ul>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><div class="eyebrow">TRANSPARENCY</div><h2>What AirGuard knows — and what it doesn’t</h2></div></div>
+        <div class="principles-grid">
+          <article class="principle"><span>01</span><h3>Forecast, not diagnosis</h3><p>AirGuard does not predict asthma, disease, or individual health outcomes. It supports environmental planning.</p></article>
+          <article class="principle"><span>02</span><h3>Relative, not “safe”</h3><p>The app identifies lower-exposure periods among the available hours. It never labels an outdoor period as medically safe.</p></article>
+          <article class="principle"><span>03</span><h3>Source visible</h3><p>The current public build uses CAMS air-quality forecasts via Open-Meteo and weather forecasts via Open-Meteo.</p></article>
+          <article class="principle"><span>04</span><h3>Built for validation</h3><p>The product is structured so a Lahore sensor network or independent ML forecast can replace the public forecast source later.</p></article>
+        </div>
+      </section>
+
+      <section id="research" class="section research-section">
+        <div class="research-layout">
+          <div>
+            <div class="eyebrow">RESEARCH BUILD</div>
+            <h2>From forecast to intervention</h2>
+            <p>AirGuard’s research question is not whether pollution is harmful. It asks whether short-term environmental forecasts can support scheduling choices that reduce modeled exposure during outdoor activities.</p>
+            <div class="research-flow">
+              <div><strong>1</strong><span>Air quality + weather</span></div><b>→</b>
+              <div><strong>2</strong><span>Hourly forecast</span></div><b>→</b>
+              <div><strong>3</strong><span>Window optimization</span></div><b>→</b>
+              <div><strong>4</strong><span>Exposure proxy comparison</span></div>
+            </div>
+          </div>
+          <aside class="method-card">
+            <h3>Current methodology</h3>
+            <dl>
+              <div><dt>Study area</dt><dd>Lahore, Pakistan</dd></div>
+              <div><dt>Primary variable</dt><dd>PM2.5 (µg/m³)</dd></div>
+              <div><dt>Decision metric</dt><dd>Mean PM2.5 over a contiguous activity window</dd></div>
+              <div><dt>Exposure proxy</dt><dd>PM2.5 × activity duration</dd></div>
+              <div><dt>Current forecast source</dt><dd>CAMS via Open-Meteo</dd></div>
+              <div><dt>Next validation layer</dt><dd>Local sensors + independent ML model</dd></div>
+            </dl>
+            <button id="exportBtn" class="btn secondary full">Export current forecast CSV</button>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-brand"><strong>AirGuard</strong><span>Environmental decision support for Lahore</span></div>
+      <div class="footer-note">Built as a youth environmental research project. Data source details are shown in-app.</div>
+    </footer>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
