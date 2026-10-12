@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071514" />
+  <meta name="description" content="AirGuard turns air-quality forecasts into practical lower-exposure decisions for families, schools, commuters and outdoor activity planning." />
+  <meta name="color-scheme" content="dark" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>AirGuard — Air Quality Decision OS</title>
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="AirGuard home">
+      <span class="brand-mark">A</span>
+      <span class="brand-copy"><strong>AirGuard</strong><small>Decision OS</small></span>
+    </a>
+    <nav class="desktop-nav" aria-label="Primary navigation">
+      <a href="#ask">Ask AirGuard</a>
+      <a href="#planner">Planner</a>
+      <a href="#school">School mode</a>
+      <a href="#impact">Impact</a>
+      <a href="#lab">Sensor lab</a>
+    </nav>
+    <div class="top-actions">
+      <button id="installBtn" class="ghost-btn hidden" type="button">Install</button>
+      <button id="locationBtn" class="location-chip" type="button"><span class="location-dot"></span><span id="locationLabel">Lahore, Pakistan</span></button>
+    </div>
+  </header>
+
+  <main id="top" class="page-shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">AIR QUALITY → A DECISION YOU CAN USE</div>
+        <h1>Ask one question.<br><span>Find one better window.</span></h1>
+        <p class="hero-lead">AirGuard is not another AQI dashboard. It answers practical questions like “When should my brother play football?” or “When should our school hold assembly?” and finds the lowest-PM<sub>2.5</sub> window that fits your real schedule.</p>
+
+        <div id="ask" class="ask-box" aria-labelledby="askHeading">
+          <label id="askHeading" for="askInput">What do you need to do outside?</label>
+          <div class="ask-row">
+            <input id="askInput" autocomplete="off" placeholder="e.g. Can I run tomorrow between 6 and 9 AM for 45 minutes?" />
+            <button id="askBtn" class="primary-btn" type="button">Ask AirGuard</button>
+          </div>
+          <div class="prompt-chips" id="promptChips">
+            <button type="button" data-query="When should my younger brother play football tomorrow between 3 PM and 6 PM for 45 minutes?">Brother’s football</button>
+            <button type="button" data-query="Best time for a 30 minute school assembly tomorrow between 7 AM and 11 AM">School assembly</button>
+            <button type="button" data-query="When should I open the windows today for 30 minutes?">Open windows</button>
+            <button type="button" data-query="Can I run now for 45 minutes?">Run now?</button>
+          </div>
+        </div>
+
+        <div class="hero-principles">
+          <span>Forecast-aware</span><i>•</i><span>Constraint-aware</span><i>•</i><span>Privacy-first</span><i>•</i><span>No medical claims</span>
+        </div>
+      </div>
+
+      <aside class="hero-panel glass" aria-label="Current air quality snapshot">
+        <div class="panel-topline">
+          <span id="sourceBadge" class="source-badge">Loading live forecast…</span>
+          <span id="updatedAt">—</span>
+        </div>
+        <div class="current-reading">
+          <div><span id="currentPm">—</span><small>µg/m³ PM2.5</small></div>
+          <span id="aqiPill" class="aqi-pill">US AQI —</span>
+        </div>
+        <div class="relative-line" id="relativeBand">—</div>
+        <div class="current-grid">
+          <div><small>Temperature</small><strong id="currentTemp">—</strong></div>
+          <div><small>Humidity</small><strong id="currentHumidity">—</strong></div>
+          <div><small>Wind</small><strong id="currentWind">—</strong></div>
+          <div><small>Ozone</small><strong id="currentOzone">—</strong></div>
+        </div>
+        <div class="heartline"><span>♥</span><p id="careLine">AirGuard can’t clean the whole city today. It can help you choose one better hour.</p></div>
+      </aside>
+    </section>
+
+    <section id="answerSection" class="answer-section hidden" aria-live="polite">
+      <article class="answer-card glass">
+        <div class="answer-head">
+          <div><span class="eyebrow">AIRGUARD ANSWER</span><h2 id="answerTitle">Your better window</h2></div>
+          <div id="answerConfidence" class="confidence-pill">—</div>
+        </div>
+        <div class="answer-main">
+          <div class="answer-time"><span id="answerWindow">—</span><small id="answerDate">—</small></div>
+          <div class="answer-metric"><span id="answerPm">—</span><small>mean modeled PM2.5</small></div>
+        </div>
+        <p id="answerSummary" class="answer-summary">—</p>
+        <p id="answerSummaryUrdu" class="answer-summary urdu hidden" dir="rtl">—</p>
+        <div id="answerFlags" class="flag-row"></div>
+        <div class="answer-actions">
+          <button id="savePlanBtn" class="primary-btn" type="button">Save this plan</button>
+          <button id="shareAnswerBtn" class="secondary-btn" type="button">Share</button>
+          <button id="urduBtn" class="secondary-btn" type="button">اردو</button>
+          <button id="addCalendarBtn" class="secondary-btn" type="button">Add to calendar</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="section" id="today">
+      <div class="section-heading">
+        <div><span class="eyebrow">TODAY, EXPLAINED</span><h2>One screen instead of five searches</h2></div>
+        <button id="refreshBtn" class="text-btn" type="button">Refresh data</button>
+      </div>
+      <div class="today-grid">
+        <article class="glass chart-card">
+          <div class="card-head"><div><h3>Next 24 hours</h3><p>Modeled PM2.5 by local hour</p></div><span id="chartRange">—</span></div>
+          <canvas id="forecastChart" width="1000" height="360" aria-label="24 hour PM2.5 forecast chart"></canvas>
+          <div class="chart-caption"><span id="lowHour">Lowest: —</span><span id="highHour">Highest: —</span><span id="medianPm">Median: —</span></div>
+        </article>
+        <article class="glass better-hour-card">
+          <span class="eyebrow">SIGNATURE FEATURE</span>
+          <h3>One Better Hour</h3>
+          <p>AirGuard finds the lowest-PM2.5 60-minute period between 6 AM and 10 PM.</p>
+          <div class="better-hour-time" id="betterHourTime">—</div>
+          <div class="better-hour-stat"><span id="betterHourPm">—</span><small>µg/m³ mean PM2.5</small></div>
+          <p id="betterHourCopy" class="muted">Calculating…</p>
+          <button id="betterHourSave" class="secondary-btn full" type="button">Save this hour</button>
+        </article>
+      </div>
+
+      <div class="quick-grid">
+        <button class="quick-card" type="button" data-quick="run"><span>🏃</span><strong>Run / exercise</strong><small id="quickRun">Find a lower-air window</small></button>
+        <button class="quick-card" type="button" data-quick="children"><span>⚽</span><strong>Children outdoors</strong><small id="quickChildren">Plan play around pollution</small></button>
+        <button class="quick-card" type="button" data-quick="ventilation"><span>🪟</span><strong>Open windows</strong><small id="quickVent">Find a lower-PM window</small></button>
+        <button class="quick-card" type="button" data-quick="commute"><span>🚶</span><strong>Commute</strong><small id="quickCommute">Compare departure times</small></button>
+      </div>
+    </section>
+
+    <section id="planner" class="section">
+      <div class="section-heading">
+        <div><span class="eyebrow">DETAILED PLANNER</span><h2>Give AirGuard your constraints</h2><p>It ranks every 15-minute start time that fits your schedule. PM2.5 drives the ranking; rain, heat and UV are shown as practical flags, not hidden inside a mystery score.</p></div>
+      </div>
+      <div class="planner-grid">
+        <form id="plannerForm" class="glass form-card">
+          <div class="form-grid">
+            <label>Activity
+              <select id="activityType">
+                <option value="general">General outdoor activity</option>
+                <option value="walk">Walk</option>
+                <option value="run">Run / jog</option>
+                <option value="sport">Outdoor sport</option>
+                <option value="children">Children outdoors</option>
+                <option value="commute">Commute</option>
+                <option value="ventilation">Open windows / ventilation</option>
+              </select>
+            </label>
+            <label>Date<select id="plannerDate"></select></label>
+            <label>Earliest start<select id="plannerStart"></select></label>
+            <label>Latest finish<select id="plannerEnd"></select></label>
+            <label>Duration<select id="plannerDuration"><option>15</option><option>30</option><option selected>45</option><option>60</option><option>90</option><option>120</option></select></label>
+            <label>Compare with start time<select id="plannerBaseline"></select></label>
+          </div>
+          <button class="primary-btn full" type="submit">Find best available window</button>
+          <p class="micro-note">Exposure proxy = PM2.5 × duration × activity-intensity factor. It is a relative planning metric, not inhaled dose or medical risk.</p>
+        </form>
+        <article class="glass result-card" id="plannerResult">
+          <div class="empty-state"><span>◎</span><h3>Ready when you are</h3><p>Choose your constraints and AirGuard will show the best available period plus the trade-off against your usual time.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="school" class="section school-section">
+      <div class="section-heading">
+        <div><span class="eyebrow">SCHOOL MODE</span><h2>Optimize a whole school morning, not one activity</h2><p>This is AirGuard’s hardest-to-replace feature: it schedules several outdoor activities without overlap to minimize total modeled concentration-time exposure within the school day.</p></div>
+      </div>
+      <div class="school-grid">
+        <form id="schoolForm" class="glass form-card">
+          <div class="three-col">
+            <label>Date<select id="schoolDate"></select></label>
+            <label>School starts<select id="schoolStart"></select></label>
+            <label>School ends<select id="schoolEnd"></select></label>
+          </div>
+          <div class="activity-builder">
+            <div class="builder-head"><strong>Outdoor activities</strong><button id="addActivityBtn" type="button" class="text-btn">+ Add activity</button></div>
+            <div id="activityRows"></div>
+          </div>
+          <button class="primary-btn full" type="submit">Optimize school schedule</button>
+        </form>
+        <article id="schoolResult" class="glass school-result">
+          <div class="empty-state"><span>▦</span><h3>Build tomorrow’s outdoor timetable</h3><p>Assembly, recess and sports can be treated as a scheduling problem instead of three separate AQI checks.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="impact" class="section">
+      <div class="section-heading">
+        <div><span class="eyebrow">THE HUMAN LAYER</span><h2>Protect someone. Then remember the choice.</h2><p>AirGuard stores plans only in this browser. Completed plans become your personal impact log — useful for families, school pilots and real-world evidence.</p></div>
+      </div>
+      <div class="impact-grid">
+        <article class="glass care-card">
+          <span class="eyebrow">CARE CIRCLE</span>
+          <h3>Who are you planning for?</h3>
+          <p class="muted">A name or relationship changes the language, not the scientific thresholds.</p>
+          <div class="care-form-row">
+            <input id="careName" placeholder="e.g. Mom, my brother, Grade 6 students" />
+            <select id="careRelation"><option value="someone I care about">Someone I care about</option><option value="my family">My family</option><option value="my child">My child</option><option value="my parent">My parent</option><option value="my students">My students</option><option value="myself">Myself</option></select>
+            <button id="saveCareBtn" class="secondary-btn" type="button">Save</button>
+          </div>
+          <div class="care-message" id="careMessage">Choose one better window for someone you care about.</div>
+        </article>
+        <article class="glass impact-stats">
+          <div><small>Completed lower-air plans</small><strong id="impactCount">0</strong></div>
+          <div><small>Better-air minutes completed</small><strong id="impactMinutes">0</strong></div>
+          <div><small>Exposure-proxy units avoided*</small><strong id="impactAvoided">0</strong></div>
+          <p>*Modeled relative planning metric, not a health outcome.</p>
+        </article>
+      </div>
+      <article class="glass ledger-card">
+        <div class="card-head"><div><h3>Your AirGuard log</h3><p>Plans are private to this device unless you export them.</p></div><div><button id="exportImpactBtn" class="text-btn" type="button">Export CSV</button><button id="clearImpactBtn" class="text-btn danger-text" type="button">Clear</button></div></div>
+        <div id="impactList" class="impact-list"></div>
+      </article>
+    </section>
+
+    <section id="lab" class="section">
+      <div class="section-heading">
+        <div><span class="eyebrow">SENSOR LAB</span><h2>Turn a school sensor file into evidence</h2><p>Drop in a CSV and AirGuard analyzes it locally in your browser. Nothing is uploaded. This makes the same product usable for a future school pilot without rebuilding the app.</p></div>
+      </div>
+      <div class="lab-grid">
+        <article class="glass upload-card">
+          <label class="drop-zone" for="sensorFile">
+            <input id="sensorFile" type="file" accept=".csv,text/csv" />
+            <span>↑</span><strong>Upload sensor CSV</strong><small>Expected columns: <code>time</code> or <code>timestamp</code>, and <code>pm2_5</code> / <code>pm25</code></small>
+          </label>
+          <label>Analysis window<select id="sensorDuration"><option>30</option><option selected>45</option><option>60</option><option>90</option></select></label>
+        </article>
+        <article class="glass lab-result" id="sensorResult">
+          <div class="empty-state"><span>⌁</span><h3>No sensor file loaded</h3><p>Use this later with a low-cost PM2.5 monitor to validate whether AirGuard-selected periods were lower in observed pollution.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section transparency">
+      <div class="section-heading"><div><span class="eyebrow">WHY TRUST THE OUTPUT?</span><h2>Transparent by design</h2></div></div>
+      <div class="principles-grid">
+        <article><span>01</span><h3>Relative, never “safe”</h3><p>AirGuard ranks lower-exposure options. It does not declare a polluted period medically safe.</p></article>
+        <article><span>02</span><h3>No black-box score</h3><p>PM2.5 determines the main ranking. Weather conditions are displayed separately as practical flags.</p></article>
+        <article><span>03</span><h3>Data source visible</h3><p>Public mode uses modeled air-quality forecasts through Open-Meteo and weather forecasts through Open-Meteo.</p></article>
+        <article><span>04</span><h3>Sensor-ready</h3><p>The built-in Sensor Lab can analyze observed PM2.5 files locally for school-pilot validation.</p></article>
+        <article><span>05</span><h3>Local privacy</h3><p>Care Circle and impact logs stay in browser storage. No account is required.</p></article>
+        <article><span>06</span><h3>Offline resilience</h3><p>The installable PWA caches the app shell and can fall back to the last stored forecast when the network fails.</p></article>
+      </div>
+    </section>
+
+    <section class="section methodology">
+      <div class="method-grid">
+        <div><span class="eyebrow">RESEARCH MODE</span><h2>Built to produce evidence, not just screenshots</h2><p>AirGuard’s defensible contribution is the decision layer: environmental forecast → real schedule constraints → optimized lower-PM2.5 window → transparent comparison → optional completion log.</p></div>
+        <dl class="method-list">
+          <div><dt>Primary variable</dt><dd>PM2.5 (µg/m³)</dd></div>
+          <div><dt>Search resolution</dt><dd>15-minute starts using hourly forecast values</dd></div>
+          <div><dt>Personal planner objective</dt><dd>Lowest mean PM2.5 within constraints</dd></div>
+          <div><dt>School optimizer objective</dt><dd>Minimum total relative exposure proxy, no overlap</dd></div>
+          <div><dt>Comparison metric</dt><dd>PM2.5 × duration × activity factor</dd></div>
+          <div><dt>Claims deliberately avoided</dt><dd>Diagnosis, causal health benefit, “safe time,” hyperlocal accuracy</dd></div>
+        </dl>
+      </div>
+    </section>
+  </main>
+
+  <div id="locationModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="locationModalTitle">
+    <div class="modal-card glass">
+      <div class="modal-head"><div><span class="eyebrow">LOCATION</span><h2 id="locationModalTitle">Choose where AirGuard should plan</h2></div><button id="closeLocationBtn" class="icon-btn" type="button" aria-label="Close">×</button></div>
+      <div class="location-search-row"><input id="locationSearch" placeholder="Search city or town" /><button id="searchLocationBtn" class="primary-btn" type="button">Search</button></div>
+      <button id="useMyLocationBtn" class="secondary-btn full" type="button">Use my device location</button>
+      <div id="locationResults" class="location-results"></div>
+      <p class="micro-note">Location is used to fetch environmental data. AirGuard does not send your Care Circle or impact log to a server.</p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div><strong>AirGuard</strong><span>Built for one better decision at a time.</span></div>
+    <div>Environmental decision support only · Not medical advice · Forecasts can be wrong · Air quality: CAMS via <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a></div>
+  </footer>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
